@@ -106,6 +106,10 @@ class GTATask(Task[torch.Tensor]):
         tensors: Dict[ModelReference, torch.Tensor],
         **_kwargs,
     ) -> torch.Tensor:
+        # Skip Token embeddings layer and lm_head
+        if self.weight_info.name in ['model.embed_tokens.weight', 'lm_head.weight']:
+            return tensors[self.base_model]
+
         # collect task vectors
         tvs, base = get_task_vectors(
             self.weight_info,
@@ -230,3 +234,4 @@ def get_mask(
         raise RuntimeError(f'Unimplemented mask method "{method}"')
 
     return sign == majority_sign
+
