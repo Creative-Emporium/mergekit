@@ -1,17 +1,5 @@
 # Copyright (C) 2025 Arcee AI
-#
-# This software is free software: you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This software is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program. If not, see http://www.gnu.org/licenses/.
+# SPDX-License-Identifier: BUSL-1.1
 
 import asyncio
 import logging
@@ -177,6 +165,8 @@ class BufferedRayEvaluationStrategyActor:
                             vllm=self.vllm,
                             batch_size=self.batch_size,
                             task_manager=self.task_manager,
+                            apply_chat_template=self.config.apply_chat_template,
+                            fewshot_as_multiturn=self.config.fewshot_as_multiturn,
                             **kwargs,
                         )
                     ] = future_result
@@ -277,6 +267,8 @@ def evaluate_genotype_serial(
             vllm=vllm,
             batch_size=batch_size,
             task_manager=task_manager,
+            apply_chat_template=config.apply_chat_template,
+            fewshot_as_multiturn=config.fewshot_as_multiturn,
             **kwargs,
         )
     )

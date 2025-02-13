@@ -1,20 +1,9 @@
 # Copyright (C) 2025 Arcee AI
-#
-# This software is free software: you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This software is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program. If not, see http://www.gnu.org/licenses/.
+# SPDX-License-Identifier: BUSL-1.1
 
 import os
 import re
+import threading
 from typing import Dict, Optional, Tuple
 
 import torch
@@ -34,13 +23,13 @@ class LoaderCache:
     lazy_unpickle: bool = False
     trust_remote_code: bool = False
 
-    # singleton instance
-    _instance: Optional["LoaderCache"] = None
+    # singleton instance per thread
+    _instance = threading.local()
 
     def __new__(cls) -> "LoaderCache":
-        if cls._instance is None:
-            cls._instance = super(LoaderCache, cls).__new__(cls)
-        return cls._instance
+        if not hasattr(cls._instance, "value"):
+            cls._instance.value = super(LoaderCache, cls).__new__(cls)
+        return cls._instance.value
 
     def get(self, model: ModelReference) -> LazyTensorLoader:
         if model not in self.loaders:
@@ -162,6 +151,7 @@ class TensorWriterTask(Task[TensorWriter]):
     out_path: str
     max_shard_size: int
     safe_serialization: bool = True
+    override_basename: Optional[str] = None
 
     def arguments(self) -> Dict[str, Task]:
         return {}
@@ -171,7 +161,11 @@ class TensorWriterTask(Task[TensorWriter]):
             self.out_path,
             max_shard_size=self.max_shard_size,
             safe_serialization=self.safe_serialization,
+            override_basename=self.override_basename,
         )
+
+    def main_thread_only(self):
+        return True
 
 
 class SaveTensor(Task[None]):
@@ -214,15 +208,8 @@ class FinalizeModel(Task[None]):
     def execute(self, writer: TensorWriter, **kwargs) -> None:
         writer.finalize()
 
-
-class BuildStateDict(Task[Dict[str, torch.Tensor]]):
-    tensors: ImmutableMap[WeightInfo, Task[torch.Tensor]]
-
-    def arguments(self) -> Dict[str, Task]:
-        return {str(wi): t for wi, t in self.tensors.items()}
-
-    def execute(self, **kwargs) -> Dict[str, torch.Tensor]:
-        return {str(wi): t for wi, t in self.tensors.items()}
+    def main_thread_only(self):
+        return True
 
 
 class ReturnTensor(Task[torch.Tensor]):
