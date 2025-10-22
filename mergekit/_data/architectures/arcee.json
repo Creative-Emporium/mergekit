@@ -1,7 +1,7 @@
 {
-    "model_type": "qwen3",
+    "model_type": "arcee",
     "architectures": [
-        "Qwen3ForCausalLM"
+        "ArceeForCausalLM"
     ],
     "pre_weights": [
         {
@@ -32,31 +32,22 @@
                 "name": "model.layers.${layer_index}.mlp.down_proj.weight"
             },
             {
-                "name": "model.layers.${layer_index}.mlp.gate_proj.weight"
-            },
-            {
                 "name": "model.layers.${layer_index}.mlp.up_proj.weight"
             },
             {
                 "name": "model.layers.${layer_index}.post_attention_layernorm.weight"
             },
             {
-                "name": "model.layers.${layer_index}.self_attn.k_norm.weight"
-            },
-            {
                 "name": "model.layers.${layer_index}.self_attn.k_proj.weight"
             },
             {
-                "name": "model.layers.${layer_index}.self_attn.q_norm.weight"
+                "name": "model.layers.${layer_index}.self_attn.o_proj.weight"
             },
             {
                 "name": "model.layers.${layer_index}.self_attn.q_proj.weight"
             },
             {
                 "name": "model.layers.${layer_index}.self_attn.v_proj.weight"
-            },
-            {
-                "name": "model.layers.${layer_index}.self_attn.o_proj.weight"
             }
         ]
     }
